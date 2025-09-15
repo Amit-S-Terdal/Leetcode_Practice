@@ -41,6 +41,15 @@
 
 // Solution: 
 
+#include <iostream>  // For input/output
+#include <vector>    // For std::vector
+#include <string>    // For std::string
+#include <cstring>   // For memset
+#include <algorithm> // For std::fill (optional, or other algorithmic functions)
+#include <cctype>    // For tolower, isalpha (optional)
+
+using std::string;
+using std::vector;
 
 struct TrieNode {
     TrieNode* links[58]; 
