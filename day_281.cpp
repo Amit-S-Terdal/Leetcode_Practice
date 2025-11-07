@@ -49,7 +49,8 @@
 // Solution:
 
 
-
+class Solution {
+public:
     using int2 = pair<int, int>; // (pos, orig value)
 
     static bool check(long long minPower, vector<int>& st, int r, long long k, int n) {
@@ -88,3 +89,21 @@
 
         return 1;
     }
+
+    static long long maxPower(vector<int>& stations, int r, int k) {
+        const int n=stations.size();
+        long long left=0, right=reduce(stations.begin(), stations.end(), 0LL)+k;
+        long long ans=0;
+
+        while (left<=right) {
+            long long mid = left+(right-left) / 2;;
+            if (check(mid, stations, r, k, n)) {
+                ans=mid;
+                left=mid+1;
+            } 
+            else 
+                right=mid-1;
+        }
+        return ans;
+    }
+};
