@@ -1,0 +1,74 @@
+// 2054. Two Best Non-Overlapping Events
+
+// You are given a 0-indexed 2D integer array of events where events[i] = [startTimei, endTimei, valuei]. The ith event starts at startTimei and ends at endTimei, and if you attend this event, you will receive a value of valuei. You can choose at most two non-overlapping events to attend such that the sum of their values is maximized.
+
+// Return this maximum sum.
+
+// Note that the start time and end time is inclusive: that is, you cannot attend two events where one of them starts and the other ends at the same time. More specifically, if you attend an event with end time t, the next event must start at or after t + 1.
+
+ 
+
+// Example 1:
+
+
+// Input: events = [[1,3,2],[4,5,2],[2,4,3]]
+// Output: 4
+// Explanation: Choose the green events, 0 and 1 for a sum of 2 + 2 = 4.
+// Example 2:
+
+// Example 1 Diagram
+// Input: events = [[1,3,2],[4,5,2],[1,5,5]]
+// Output: 5
+// Explanation: Choose event 2 for a sum of 5.
+// Example 3:
+
+
+// Input: events = [[1,5,3],[1,5,1],[6,6,5]]
+// Output: 8
+// Explanation: Choose events 0 and 2 for a sum of 3 + 5 = 8.
+ 
+
+// Constraints:
+
+// 2 <= events.length <= 10^5
+// events[i].length == 3
+// 1 <= startTimei <= endTimei <= 10^9
+// 1 <= valuei <= 10^6
+
+
+
+// Solution: 
+
+
+const int N=2e5;
+uint64_t Time[N];
+class Solution {
+public:
+//    using info=tuple<int, bool, int>;
+    static int maxTwoEvents(vector<vector<int>>& events) {
+        const int n=events.size();
+        for(int i=0; i<n; i++){
+            int s=events[i][0], e=events[i][1], v=events[i][2];
+            Time[2*i]=((uint64_t)s<<21)+v;
+            Time[2*i+1]=((uint64_t)e<<21)+(1<<20)+v;
+        }
+        int n2=n*2;
+        sort(Time, Time+(2*n));
+        int ans=0, maxV=0; 
+        for(int i=0; i<n2; i++){
+            const auto info=Time[i];
+            bool isEnd=(info>>20)&1;
+            int v=info&((1<<20)-1); 
+            if (isEnd) maxV=max(maxV, v);
+            else ans=max(ans, maxV+v);
+        }
+        return ans;    
+    }
+};
+
+auto init = []() {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+    cout.tie(nullptr);
+    return 'c';
+}();
