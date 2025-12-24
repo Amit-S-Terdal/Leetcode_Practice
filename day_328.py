@@ -44,12 +44,21 @@ class Solution(object):
         """
         az = sum(apple)
         
-        capacity.sort(reverse=True)
-        for i, x in enumerate(capacity):
-            az -= x
-            if az <= 0:
-                return i + 1
+        # Count capacities (1 to 50)
+        freq = [0] * 51
+        for c in capacity:
+            freq[c] += 1
+        
+        used = 0
+        
+        # Greedily use largest boxes first
+        for size in range(50, 0, -1):
+            while freq[size] > 0:
+                az -= size
+                used += 1
+                freq[size] -= 1
+                if az <= 0:
+                    return used
         
         return -1
-
 
