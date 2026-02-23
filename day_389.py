@@ -1,0 +1,71 @@
+# 1461. Check If a String Contains All Binary Codes of Size K
+
+# Given a binary string s and an integer k, return true if every binary code of length k is a substring of s. Otherwise, return false.
+
+ 
+
+# Example 1:
+
+# Input: s = "00110110", k = 2
+# Output: true
+# Explanation: The binary codes of length 2 are "00", "01", "10" and "11". They can be all found as substrings at indices 0, 1, 3 and 2 respectively.
+# Example 2:
+
+# Input: s = "0110", k = 1
+# Output: true
+# Explanation: The binary codes of length 1 are "0" and "1", it is clear that both exist as a substring. 
+# Example 3:
+
+# Input: s = "0110", k = 2
+# Output: false
+# Explanation: The binary code "00" is of length 2 and does not exist in the array.
+ 
+
+# Constraints:
+
+# 1 <= s.length <= 5 * 10^5
+# s[i] is either '0' or '1'.
+# 1 <= k <= 20
+
+
+
+# Solution: 
+
+
+class Solution(object):
+    def hasAllCodes(self, s, k):
+        """
+        :type s: str
+        :type k: int
+        :rtype: bool
+        """
+        n = len(s)
+        if n < k:
+            return False
+
+        total = 1 << k
+        seen = [False] * total
+        count = 0
+
+        mask = 0
+        window_mask = (1 << (k - 1)) - 1
+
+        # Build initial window
+        for i in range(k):
+            mask = (mask << 1) | (ord(s[i]) - ord('0'))
+
+        if not seen[mask]:
+            seen[mask] = True
+            count += 1
+
+        # Slide window
+        for r in range(k, n):
+            mask &= window_mask
+            mask <<= 1
+            mask |= (ord(s[r]) - ord('0'))
+
+            if not seen[mask]:
+                seen[mask] = True
+                count += 1
+
+        return count == total
