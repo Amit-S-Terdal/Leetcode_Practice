@@ -57,31 +57,22 @@
 # Solution:
 
 
-
 class Solution(object):
     def minimumDistance(self, nums):
         """
         :type nums: List[int]
         :rtype: int
         """
-        N = 10**5 + 1
-        pos = [[-1, -1] for _ in range(N)]
+        n = len(nums)
+        M = max(nums)
         
-        ans = float('inf')
-        M = 0
+        pos = [(-1, -1) for _ in range(M + 1)]
+        ans = 1 << 32
         
         for k, x in enumerate(nums):
-            M = max(M, x)
-            
             if pos[x][1] != -1:
                 ans = min(ans, (k - pos[x][1]) << 1)
             
-            # equivalent to exchange(pos[x][0], k)
-            pos[x][1], pos[x][0] = pos[x][0], k
+            pos[x] = (k, pos[x][0])
         
-        # reset only used portion
-        for i in range(M + 1):
-            pos[i][0] = -1
-            pos[i][1] = -1
-        
-        return -1 if ans == float('inf') else ans
+        return -1 if ans == (1 << 32) else ans
