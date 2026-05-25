@@ -1,38 +1,42 @@
-// 3043. Find the Length of the Longest Common Prefix
+// 1340. Jump Game V
 
-// You are given two arrays with positive integers arr1 and arr2.
+// Given an array of integers arr and an integer d. In one step you can jump from index i to index:
 
-// A prefix of a positive integer is an integer formed by one or more of its digits, starting from its leftmost digit. For example, 123 is a prefix of the integer 12345, while 234 is not.
+// i + x where: i + x < arr.length and  0 < x <= d.
+// i - x where: i - x >= 0 and  0 < x <= d.
+// In addition, you can only jump from index i to index j if arr[i] > arr[j] and arr[i] > arr[k] for all indices k between i and j (More formally min(i, j) < k < max(i, j)).
 
-// A common prefix of two integers a and b is an integer c, such that c is a prefix of both a and b. For example, 5655359 and 56554 have common prefixes 565 and 5655 while 1223 and 43456 do not have a common prefix.
+// You can choose any index of the array and start jumping. Return the maximum number of indices you can visit.
 
-// You need to find the length of the longest common prefix between all pairs of integers (x, y) such that x belongs to arr1 and y belongs to arr2.
-
-// Return the length of the longest common prefix among all pairs. If no common prefix exists among them, return 0.
+// Notice that you can not jump outside of the array at any time.
 
  
 
 // Example 1:
 
-// Input: arr1 = [1,10,100], arr2 = [1000]
-// Output: 3
-// Explanation: There are 3 pairs (arr1[i], arr2[j]):
-// - The longest common prefix of (1, 1000) is 1.
-// - The longest common prefix of (10, 1000) is 10.
-// - The longest common prefix of (100, 1000) is 100.
-// The longest common prefix is 100 with a length of 3.
+
+// Input: arr = [6,4,14,6,8,13,9,7,10,6,12], d = 2
+// Output: 4
+// Explanation: You can start at index 10. You can jump 10 --> 8 --> 6 --> 7 as shown.
+// Note that if you start at index 6 you can only jump to index 7. You cannot jump to index 5 because 13 > 9. You cannot jump to index 4 because index 5 is between index 4 and 6 and 13 > 9.
+// Similarly You cannot jump from index 3 to index 2 or index 1.
 // Example 2:
 
-// Input: arr1 = [1,2,3], arr2 = [4,4,4]
-// Output: 0
-// Explanation: There exists no common prefix for any pair (arr1[i], arr2[j]), hence we return 0.
-// Note that common prefixes between elements of the same array do not count.
+// Input: arr = [3,3,3,3,3], d = 3
+// Output: 1
+// Explanation: You can start at any index. You always cannot jump to any index.
+// Example 3:
+
+// Input: arr = [7,6,5,4,3,2,1], d = 1
+// Output: 7
+// Explanation: Start at index 0. You can visit all the indicies. 
  
 
 // Constraints:
 
-// 1 <= arr1.length, arr2.length <= 5 * 10^4
-// 1 <= arr1[i], arr2[i] <= 10^8
+// 1 <= arr.length <= 1000
+// 1 <= arr[i] <= 10^5
+// 1 <= d <= arr.length
 
 
 
@@ -41,67 +45,73 @@
 
 
 
-struct TrieNode {
-    TrieNode* next[10]; // '0'-'9'
-    bool isEnd=0;
+struct Edge{
+    int to, nxt=-1;
 };
-static constexpr int N=9e5;  
-static TrieNode pool[N];
-static int ptr=0;   // node counter
-struct Trie {
-    TrieNode* newNode() {
-        TrieNode* node=&pool[ptr++];
-        memset(node->next, 0, sizeof(node->next));
-        node->isEnd=0;
-        return node;
-    }
-public:
-    TrieNode* root;
-    Trie(){
-        ptr=0; // reset the counter
-        root=newNode();
-    }
-    void insert(string&& word) {
-        TrieNode* Node=root;
-        for(char c: word){
-            int i=c-'0';
-            if(Node->next[i]==NULL)
-                Node->next[i]=newNode();
-            Node=Node->next[i];
-        }
-        Node->isEnd=1;
-    }
-    
-    int commonPrefix(string&& s) {
-        TrieNode* Node =root;
-        int len=0;
-        for(char c : s){
-            int i = c - '0';
-            if(Node->next[i]==NULL) return len;
-            Node = Node->next[i];
-            len++;
-        }
-        return len;
-        
-    }
-};
+
+constexpr int E=1000*999/2;// at most C(1000, 2) edges
+constexpr int V=1000;
+
+Edge POOL[E];
+int idx=0;
+
+int adj[V], deg[V];
+int dp[V];
+
+int q[V];// for queue holding idx
+int front, back;
+
+inline void addEdge(int u, int v){
+    POOL[idx]={v, adj[u]};
+    adj[u]=idx++;
+    deg[v]++;
+}
+int Stack[V], top=-1;
 
 class Solution {
 public:
-    int longestCommonPrefix(vector<int>& arr1, vector<int>& arr2) {
-        Trie trie=Trie();
-        for (int x: arr2)
-            trie.insert(to_string(x));
-        int maxLen=0;
-        for (int x: arr1)
-            maxLen=max(maxLen, trie.commonPrefix(to_string(x)));
-        return maxLen;
+    static int maxJumps(vector<int>& arr, int d) {
+        const int n=arr.size();
+        // reset
+        idx=0;
+        memset(adj, -1, n*sizeof(int));
+        memset(deg, 0, n*sizeof(int));
+        fill(dp, dp+n, 1);
+        // montonone stack
+        top=-1;// clear stack
+        for(int i=0; i<n; i++){
+            const int x=arr[i];
+            while(top>-1 && arr[Stack[top]]<x){
+                int j=Stack[top--];
+                if (i-j<=d) addEdge(j, i);
+            }
+            Stack[++top]=i;
+        }
+        top=-1;// clear Stack
+        for(int i=n-1; i>=0; i--){
+            const int x=arr[i];
+            while(top>-1 && arr[Stack[top]]<x){
+                int j=Stack[top--];
+                if (j-i<=d) addEdge(j, i);
+            }
+            Stack[++top]=i;
+        }
+
+        front=back= 0;// reset for q
+        for(int i=0; i<n; i++)// Push i to q if deg[i]=0
+            if(deg[i]==0)
+                q[back++]=i;
+
+        while(front<back){
+            int u=q[front++];
+            for(int e=adj[u]; e!=-1; e=POOL[e].nxt){
+                int v=POOL[e].to;
+                dp[v]=max(dp[v], dp[u]+1);
+                if(--deg[v]==0)
+                    q[back++]=v;
+            }
+        }
+
+        return *max_element(dp, dp+n);
     }
 };
-
-auto init = []() {
-    ios::sync_with_stdio(0);
-    cin.tie(0);
-    cout.tie(0);
-    return 'c';
-}();

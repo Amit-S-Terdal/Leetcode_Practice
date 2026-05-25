@@ -1,38 +1,42 @@
-# 3043. Find the Length of the Longest Common Prefix
+# 1340. Jump Game V
 
-# You are given two arrays with positive integers arr1 and arr2.
+# Given an array of integers arr and an integer d. In one step you can jump from index i to index:
 
-# A prefix of a positive integer is an integer formed by one or more of its digits, starting from its leftmost digit. For example, 123 is a prefix of the integer 12345, while 234 is not.
+# i + x where: i + x < arr.length and  0 < x <= d.
+# i - x where: i - x >= 0 and  0 < x <= d.
+# In addition, you can only jump from index i to index j if arr[i] > arr[j] and arr[i] > arr[k] for all indices k between i and j (More formally min(i, j) < k < max(i, j)).
 
-# A common prefix of two integers a and b is an integer c, such that c is a prefix of both a and b. For example, 5655359 and 56554 have common prefixes 565 and 5655 while 1223 and 43456 do not have a common prefix.
+# You can choose any index of the array and start jumping. Return the maximum number of indices you can visit.
 
-# You need to find the length of the longest common prefix between all pairs of integers (x, y) such that x belongs to arr1 and y belongs to arr2.
-
-# Return the length of the longest common prefix among all pairs. If no common prefix exists among them, return 0.
+# Notice that you can not jump outside of the array at any time.
 
  
 
 # Example 1:
 
-# Input: arr1 = [1,10,100], arr2 = [1000]
-# Output: 3
-# Explanation: There are 3 pairs (arr1[i], arr2[j]):
-# - The longest common prefix of (1, 1000) is 1.
-# - The longest common prefix of (10, 1000) is 10.
-# - The longest common prefix of (100, 1000) is 100.
-# The longest common prefix is 100 with a length of 3.
+
+# Input: arr = [6,4,14,6,8,13,9,7,10,6,12], d = 2
+# Output: 4
+# Explanation: You can start at index 10. You can jump 10 --> 8 --> 6 --> 7 as shown.
+# Note that if you start at index 6 you can only jump to index 7. You cannot jump to index 5 because 13 > 9. You cannot jump to index 4 because index 5 is between index 4 and 6 and 13 > 9.
+# Similarly You cannot jump from index 3 to index 2 or index 1.
 # Example 2:
 
-# Input: arr1 = [1,2,3], arr2 = [4,4,4]
-# Output: 0
-# Explanation: There exists no common prefix for any pair (arr1[i], arr2[j]), hence we return 0.
-# Note that common prefixes between elements of the same array do not count.
+# Input: arr = [3,3,3,3,3], d = 3
+# Output: 1
+# Explanation: You can start at any index. You always cannot jump to any index.
+# Example 3:
+
+# Input: arr = [7,6,5,4,3,2,1], d = 1
+# Output: 7
+# Explanation: Start at index 0. You can visit all the indicies. 
  
 
 # Constraints:
 
-# 1 <= arr1.length, arr2.length <= 5 * 10^4
-# 1 <= arr1[i], arr2[i] <= 10^8
+# 1 <= arr.length <= 1000
+# 1 <= arr[i] <= 10^5
+# 1 <= d <= arr.length
 
 
 
@@ -41,61 +45,66 @@
 
 
 
-class TrieNode:
-    def __init__(self):
-        self.next = [None] * 10
-        self.isEnd = False
-
-
-class Trie:
-    def __init__(self):
-        self.root = TrieNode()
-
-    def insert(self, word):
-        node = self.root
-
-        for c in word:
-            idx = ord(c) - ord('0')
-
-            if node.next[idx] is None:
-                node.next[idx] = TrieNode()
-
-            node = node.next[idx]
-
-        node.isEnd = True
-
-    def commonPrefix(self, s):
-        node = self.root
-        length = 0
-
-        for c in s:
-            idx = ord(c) - ord('0')
-
-            if node.next[idx] is None:
-                return length
-
-            node = node.next[idx]
-            length += 1
-
-        return length
-
-
 class Solution(object):
-    def longestCommonPrefix(self, arr1, arr2):
+    def maxJumps(self, arr, d):
         """
-        :type arr1: List[int]
-        :type arr2: List[int]
+        :type arr: List[int]
+        :type d: int
         :rtype: int
         """
 
-        trie = Trie()
+        n = len(arr)
 
-        for x in arr2:
-            trie.insert(str(x))
+        adj = [[] for _ in range(n)]
+        deg = [0] * n
+        dp = [1] * n
 
-        maxLen = 0
+        def add_edge(u, v):
+            adj[u].append(v)
+            deg[v] += 1
 
-        for x in arr1:
-            maxLen = max(maxLen, trie.commonPrefix(str(x)))
+        stack = []
 
-        return maxLen
+        # left -> right monotonic stack
+        for i in range(n):
+            while stack and arr[stack[-1]] < arr[i]:
+                j = stack.pop()
+
+                if i - j <= d:
+                    add_edge(j, i)
+
+            stack.append(i)
+
+        # right -> left monotonic stack
+        stack = []
+
+        for i in range(n - 1, -1, -1):
+            while stack and arr[stack[-1]] < arr[i]:
+                j = stack.pop()
+
+                if j - i <= d:
+                    add_edge(j, i)
+
+            stack.append(i)
+
+        # topological BFS
+        from collections import deque
+
+        q = deque()
+
+        for i in range(n):
+            if deg[i] == 0:
+                q.append(i)
+
+        while q:
+            u = q.popleft()
+
+            for v in adj[u]:
+                dp[v] = max(dp[v], dp[u] + 1)
+
+                deg[v] -= 1
+
+                if deg[v] == 0:
+                    q.append(v)
+
+        return max(dp)

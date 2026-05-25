@@ -1,56 +1,53 @@
-// 2657. Find the Prefix Common Array of Two Arrays
+// 1752. Check if Array Is Sorted and Rotated
 
+// Given an array nums, return true if the array was originally sorted in non-decreasing order, then rotated some number of positions (including zero). Otherwise, return false.
 
-// You are given two 0-indexed integer permutations A and B of length n.
+// There may be duplicates in the original array.
 
-// A prefix common array of A and B is an array C such that C[i] is equal to the count of numbers that are present at or before the index i in both A and B.
-
-// Return the prefix common array of A and B.
-
-// A sequence of n integers is called a permutation if it contains all integers from 1 to n exactly once.
+// Note: An array A rotated by x positions results in an array B of the same length such that B[i] == A[(i+x) % A.length] for every valid index i.
 
  
 
 // Example 1:
 
-// Input: A = [1,3,2,4], B = [3,1,2,4]
-// Output: [0,2,3,4]
-// Explanation: At i = 0: no number is common, so C[0] = 0.
-// At i = 1: 1 and 3 are common in A and B, so C[1] = 2.
-// At i = 2: 1, 2, and 3 are common in A and B, so C[2] = 3.
-// At i = 3: 1, 2, 3, and 4 are common in A and B, so C[3] = 4.
+// Input: nums = [3,4,5,1,2]
+// Output: true
+// Explanation: [1,2,3,4,5] is the original sorted array.
+// You can rotate the array by x = 2 positions to begin on the element of value 3: [3,4,5,1,2].
 // Example 2:
 
-// Input: A = [2,3,1], B = [3,1,2]
-// Output: [0,1,3]
-// Explanation: At i = 0: no number is common, so C[0] = 0.
-// At i = 1: only 3 is common in A and B, so C[1] = 1.
-// At i = 2: 1, 2, and 3 are common in A and B, so C[2] = 3.
+// Input: nums = [2,1,3,4]
+// Output: false
+// Explanation: There is no sorted array once rotated that can make nums.
+// Example 3:
+
+// Input: nums = [1,2,3]
+// Output: true
+// Explanation: [1,2,3] is the original sorted array.
+// You can rotate the array by x = 0 positions (i.e. no rotation) to make nums.
  
 
 // Constraints:
 
-// 1 <= A.length == B.length == n <= 50
-// 1 <= A[i], B[i] <= n
-// It is guaranteed that A and B are both a permutation of n integers.
+// 1 <= nums.length <= 100
+// 1 <= nums[i] <= 100
 
 
-// Solution: 
 
+// Solution:
 
 
 
 class Solution {
 public:
-    vector<int> findThePrefixCommonArray(vector<int>& A, vector<int>& B) {
-        uint64_t maskA = 0, maskB = 0;
+    bool check(vector<int>& nums) {
+        bool fault = 0;
+        int n = nums.size();
 
-        for (uint8_t i = 0; i < A.size(); i++) {
-            maskA |= 1ULL << A[i];
-            maskB |= 1ULL << B[i];
-            B[i] = __builtin_popcountll(maskA & maskB);
-        }
+        for (int i = 0; i < n; i++)
+            if (nums[i] > nums[(i + 1) % n] && exchange(fault, 1))
+                return 0;
 
-        return B;
+        return 1;
     }
 };

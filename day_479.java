@@ -1,38 +1,42 @@
-// 3043. Find the Length of the Longest Common Prefix
+// 1340. Jump Game V
 
-// You are given two arrays with positive integers arr1 and arr2.
+// Given an array of integers arr and an integer d. In one step you can jump from index i to index:
 
-// A prefix of a positive integer is an integer formed by one or more of its digits, starting from its leftmost digit. For example, 123 is a prefix of the integer 12345, while 234 is not.
+// i + x where: i + x < arr.length and  0 < x <= d.
+// i - x where: i - x >= 0 and  0 < x <= d.
+// In addition, you can only jump from index i to index j if arr[i] > arr[j] and arr[i] > arr[k] for all indices k between i and j (More formally min(i, j) < k < max(i, j)).
 
-// A common prefix of two integers a and b is an integer c, such that c is a prefix of both a and b. For example, 5655359 and 56554 have common prefixes 565 and 5655 while 1223 and 43456 do not have a common prefix.
+// You can choose any index of the array and start jumping. Return the maximum number of indices you can visit.
 
-// You need to find the length of the longest common prefix between all pairs of integers (x, y) such that x belongs to arr1 and y belongs to arr2.
-
-// Return the length of the longest common prefix among all pairs. If no common prefix exists among them, return 0.
+// Notice that you can not jump outside of the array at any time.
 
  
 
 // Example 1:
 
-// Input: arr1 = [1,10,100], arr2 = [1000]
-// Output: 3
-// Explanation: There are 3 pairs (arr1[i], arr2[j]):
-// - The longest common prefix of (1, 1000) is 1.
-// - The longest common prefix of (10, 1000) is 10.
-// - The longest common prefix of (100, 1000) is 100.
-// The longest common prefix is 100 with a length of 3.
+
+// Input: arr = [6,4,14,6,8,13,9,7,10,6,12], d = 2
+// Output: 4
+// Explanation: You can start at index 10. You can jump 10 --> 8 --> 6 --> 7 as shown.
+// Note that if you start at index 6 you can only jump to index 7. You cannot jump to index 5 because 13 > 9. You cannot jump to index 4 because index 5 is between index 4 and 6 and 13 > 9.
+// Similarly You cannot jump from index 3 to index 2 or index 1.
 // Example 2:
 
-// Input: arr1 = [1,2,3], arr2 = [4,4,4]
-// Output: 0
-// Explanation: There exists no common prefix for any pair (arr1[i], arr2[j]), hence we return 0.
-// Note that common prefixes between elements of the same array do not count.
+// Input: arr = [3,3,3,3,3], d = 3
+// Output: 1
+// Explanation: You can start at any index. You always cannot jump to any index.
+// Example 3:
+
+// Input: arr = [7,6,5,4,3,2,1], d = 1
+// Output: 7
+// Explanation: Start at index 0. You can visit all the indicies. 
  
 
 // Constraints:
 
-// 1 <= arr1.length, arr2.length <= 5 * 10^4
-// 1 <= arr1[i], arr2[i] <= 10^8
+// 1 <= arr.length <= 1000
+// 1 <= arr[i] <= 10^5
+// 1 <= d <= arr.length
 
 
 
@@ -43,68 +47,112 @@
 
 class Solution {
 
-    static class TrieNode {
-        TrieNode[] next = new TrieNode[10]; // '0' - '9'
-        boolean isEnd = false;
-    }
+    static class Edge {
+        int to, nxt;
 
-    static class Trie {
-        TrieNode root;
-
-        Trie() {
-            root = new TrieNode();
-        }
-
-        void insert(String word) {
-            TrieNode node = root;
-
-            for (char c : word.toCharArray()) {
-                int idx = c - '0';
-
-                if (node.next[idx] == null) {
-                    node.next[idx] = new TrieNode();
-                }
-
-                node = node.next[idx];
-            }
-
-            node.isEnd = true;
-        }
-
-        int commonPrefix(String s) {
-            TrieNode node = root;
-            int len = 0;
-
-            for (char c : s.toCharArray()) {
-                int idx = c - '0';
-
-                if (node.next[idx] == null) {
-                    return len;
-                }
-
-                node = node.next[idx];
-                len++;
-            }
-
-            return len;
+        Edge(int to, int nxt) {
+            this.to = to;
+            this.nxt = nxt;
         }
     }
 
-    public int longestCommonPrefix(int[] arr1, int[] arr2) {
+    static final int V = 1000;
+    static final int E = 1000 * 999 / 2;
 
-        Trie trie = new Trie();
+    static Edge[] POOL = new Edge[E];
+    static int idx;
 
-        for (int x : arr2) {
-            trie.insert(String.valueOf(x));
+    static int[] adj = new int[V];
+    static int[] deg = new int[V];
+    static int[] dp = new int[V];
+
+    static int[] q = new int[V];
+    static int front, back;
+
+    static int[] stack = new int[V];
+    static int top;
+
+    static void addEdge(int u, int v) {
+        POOL[idx] = new Edge(v, adj[u]);
+        adj[u] = idx++;
+        deg[v]++;
+    }
+
+    public int maxJumps(int[] arr, int d) {
+        int n = arr.length;
+
+        // reset
+        idx = 0;
+
+        for (int i = 0; i < n; i++) {
+            adj[i] = -1;
+            deg[i] = 0;
+            dp[i] = 1;
         }
 
-        int maxLen = 0;
+        // monotonic stack (left -> right)
+        top = -1;
 
-        for (int x : arr1) {
-            maxLen = Math.max(maxLen,
-                              trie.commonPrefix(String.valueOf(x)));
+        for (int i = 0; i < n; i++) {
+            int x = arr[i];
+
+            while (top > -1 && arr[stack[top]] < x) {
+                int j = stack[top--];
+
+                if (i - j <= d) {
+                    addEdge(j, i);
+                }
+            }
+
+            stack[++top] = i;
         }
 
-        return maxLen;
+        // monotonic stack (right -> left)
+        top = -1;
+
+        for (int i = n - 1; i >= 0; i--) {
+            int x = arr[i];
+
+            while (top > -1 && arr[stack[top]] < x) {
+                int j = stack[top--];
+
+                if (j - i <= d) {
+                    addEdge(j, i);
+                }
+            }
+
+            stack[++top] = i;
+        }
+
+        // topological queue
+        front = back = 0;
+
+        for (int i = 0; i < n; i++) {
+            if (deg[i] == 0) {
+                q[back++] = i;
+            }
+        }
+
+        while (front < back) {
+            int u = q[front++];
+
+            for (int e = adj[u]; e != -1; e = POOL[e].nxt) {
+                int v = POOL[e].to;
+
+                dp[v] = Math.max(dp[v], dp[u] + 1);
+
+                if (--deg[v] == 0) {
+                    q[back++] = v;
+                }
+            }
+        }
+
+        int ans = 1;
+
+        for (int i = 0; i < n; i++) {
+            ans = Math.max(ans, dp[i]);
+        }
+
+        return ans;
     }
 }
