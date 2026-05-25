@@ -1,75 +1,78 @@
-# 33. Search in Rotated Sorted Array
+# 1871. Jump Game VII
 
-# There is an integer array nums sorted in ascending order (with distinct values).
+# You are given a 0-indexed binary string s and two integers minJump and maxJump. In the beginning, you are standing at index 0, which is equal to '0'. You can move from index i to index j if the following conditions are fulfilled:
 
-# Prior to being passed to your function, nums is possibly left rotated at an unknown index k (1 <= k < nums.length) such that the resulting array is [nums[k], nums[k+1], ..., nums[n-1], nums[0], nums[1], ..., nums[k-1]] (0-indexed). For example, [0,1,2,4,5,6,7] might be left rotated by 3 indices and become [4,5,6,7,0,1,2].
-
-# Given the array nums after the possible rotation and an integer target, return the index of target if it is in nums, or -1 if it is not in nums.
-
-# You must write an algorithm with O(log n) runtime complexity.
+# i + minJump <= j <= min(i + maxJump, s.length - 1), and
+# s[j] == '0'.
+# Return true if you can reach index s.length - 1 in s, or false otherwise.
 
  
 
 # Example 1:
 
-# Input: nums = [4,5,6,7,0,1,2], target = 0
-# Output: 4
+# Input: s = "011010", minJump = 2, maxJump = 3
+# Output: true
+# Explanation:
+# In the first step, move from index 0 to index 3. 
+# In the second step, move from index 3 to index 5.
 # Example 2:
 
-# Input: nums = [4,5,6,7,0,1,2], target = 3
-# Output: -1
-# Example 3:
-
-# Input: nums = [1], target = 0
-# Output: -1
+# Input: s = "01101110", minJump = 2, maxJump = 3
+# Output: false
  
 
 # Constraints:
 
-# 1 <= nums.length <= 5000
-# -10^4 <= nums[i] <= 10^4
-# All values of nums are unique.
-# nums is an ascending array that is possibly rotated.
-# -10^4 <= target <= 10^4
+# 2 <= s.length <= 10^5
+# s[i] is either '0' or '1'.
+# s[0] == '0'
+# 1 <= minJump <= maxJump < s.length
 
-
-# Solution:
+# Solution: 
 
 
 
 class Solution(object):
-    def search(self, nums, target):
+    def canReach(self, s, minJump, maxJump):
         """
-        :type nums: List[int]
-        :type target: int
-        :rtype: int
+        :type s: str
+        :type minJump: int
+        :type maxJump: int
+        :rtype: bool
         """
-        n = len(nums)
-        lo, hi = 0, n - 1
 
-        # Find rotation index
-        while lo < hi:
-            mid = (lo + hi) // 2
+        n = len(s)
 
-            if nums[mid] > nums[n - 1]:
-                lo = mid + 1
-            else:
-                hi = mid
+        if s[n - 1] == '1':
+            return False
 
-        rot = lo
-        lo, hi = 0, n - 1
+        q = [0] * 100000
+        front = 0
+        back = 0
 
-        # Binary search with rotation adjustment
-        while lo <= hi:
-            mid = (lo + hi) // 2
-            real = (mid + rot) % n
+        q[back] = 0
+        back += 1
 
-            if nums[real] == target:
-                return real
+        i = 0
+        far = 0
 
-            if nums[real] < target:
-                lo = mid + 1
-            else:
-                hi = mid - 1
+        while front < back:
 
-        return -1
+            i = q[front]
+            front += 1
+
+            j0 = max(far + 1, i + minJump)
+            jM = min(i + maxJump, n - 1)
+
+            for j in range(j0, jM + 1):
+                if s[j] == '0':
+
+                    if j == n - 1:
+                        return True
+
+                    q[back] = j
+                    back += 1
+
+            far = max(far, i + maxJump)
+
+        return False

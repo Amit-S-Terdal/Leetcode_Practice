@@ -1,68 +1,75 @@
-// 33. Search in Rotated Sorted Array
+// 1871. Jump Game VII
 
-// There is an integer array nums sorted in ascending order (with distinct values).
+// You are given a 0-indexed binary string s and two integers minJump and maxJump. In the beginning, you are standing at index 0, which is equal to '0'. You can move from index i to index j if the following conditions are fulfilled:
 
-// Prior to being passed to your function, nums is possibly left rotated at an unknown index k (1 <= k < nums.length) such that the resulting array is [nums[k], nums[k+1], ..., nums[n-1], nums[0], nums[1], ..., nums[k-1]] (0-indexed). For example, [0,1,2,4,5,6,7] might be left rotated by 3 indices and become [4,5,6,7,0,1,2].
-
-// Given the array nums after the possible rotation and an integer target, return the index of target if it is in nums, or -1 if it is not in nums.
-
-// You must write an algorithm with O(log n) runtime complexity.
+// i + minJump <= j <= min(i + maxJump, s.length - 1), and
+// s[j] == '0'.
+// Return true if you can reach index s.length - 1 in s, or false otherwise.
 
  
 
 // Example 1:
 
-// Input: nums = [4,5,6,7,0,1,2], target = 0
-// Output: 4
+// Input: s = "011010", minJump = 2, maxJump = 3
+// Output: true
+// Explanation:
+// In the first step, move from index 0 to index 3. 
+// In the second step, move from index 3 to index 5.
 // Example 2:
 
-// Input: nums = [4,5,6,7,0,1,2], target = 3
-// Output: -1
-// Example 3:
-
-// Input: nums = [1], target = 0
-// Output: -1
+// Input: s = "01101110", minJump = 2, maxJump = 3
+// Output: false
  
 
 // Constraints:
 
-// 1 <= nums.length <= 5000
-// -10^4 <= nums[i] <= 10^4
-// All values of nums are unique.
-// nums is an ascending array that is possibly rotated.
-// -10^4 <= target <= 10^4
+// 2 <= s.length <= 10^5
+// s[i] is either '0' or '1'.
+// s[0] == '0'
+// 1 <= minJump <= maxJump < s.length
 
-
-// Solution:
+// Solution: 
 
 
 
 class Solution {
-    public int search(int[] nums, int target) {
-        int n = nums.length;
-        int lo = 0, hi = n - 1;
+    static int[] q = new int[100000];
+    static int front, back;
 
-        while (lo < hi) {
-            int mid = (lo + hi) / 2;
-            
-            if (nums[mid] > nums[n - 1]) lo = mid + 1;
-            else hi = mid;
+    public boolean canReach(String s, int minJump, int maxJump) {
+        int n = s.length();
+
+        if (s.charAt(n - 1) == '1') {
+            return false;
         }
 
-        int rot = lo;
-        lo = 0; hi = n - 1;
+        // reset queue
+        front = 0;
+        back = 0;
 
-        while (lo <= hi) {
-            int mid = (lo + hi) / 2;
-            int real = (mid + rot) % n;
+        q[back++] = 0;
 
-            if (nums[real] == target)
-                return real;
-            
-            if (nums[real] < target) lo = mid + 1;
-            else hi = mid - 1;
+        int i = 0;
+
+        for (int far = 0; front < back; far = Math.max(far, i + maxJump)) {
+
+            i = q[front++]; // pop front
+
+            int j0 = Math.max(far + 1, i + minJump);
+            int jM = Math.min(i + maxJump, n - 1);
+
+            for (int j = j0; j <= jM; j++) {
+                if (s.charAt(j) == '0') {
+
+                    if (j == n - 1) {
+                        return true;
+                    }
+
+                    q[back++] = j;
+                }
+            }
         }
 
-        return -1;
+        return false;
     }
 }
