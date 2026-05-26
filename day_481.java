@@ -1,37 +1,47 @@
-// 1752. Check if Array Is Sorted and Rotated
+// 3120. Count the Number of Special Characters I
 
-// Given an array nums, return true if the array was originally sorted in non-decreasing order, then rotated some number of positions (including zero). Otherwise, return false.
+// You are given a string word. A letter is called special if it appears both in lowercase and uppercase in word.
 
-// There may be duplicates in the original array.
-
-// Note: An array A rotated by x positions results in an array B of the same length such that B[i] == A[(i+x) % A.length] for every valid index i.
+// Return the number of special letters in word.
 
  
 
 // Example 1:
 
-// Input: nums = [3,4,5,1,2]
-// Output: true
-// Explanation: [1,2,3,4,5] is the original sorted array.
-// You can rotate the array by x = 2 positions to begin on the element of value 3: [3,4,5,1,2].
+// Input: word = "aaAbcBC"
+
+// Output: 3
+
+// Explanation:
+
+// The special characters in word are 'a', 'b', and 'c'.
+
 // Example 2:
 
-// Input: nums = [2,1,3,4]
-// Output: false
-// Explanation: There is no sorted array once rotated that can make nums.
+// Input: word = "abc"
+
+// Output: 0
+
+// Explanation:
+
+// No character in word appears in uppercase.
+
 // Example 3:
 
-// Input: nums = [1,2,3]
-// Output: true
-// Explanation: [1,2,3] is the original sorted array.
-// You can rotate the array by x = 0 positions (i.e. no rotation) to make nums.
+// Input: word = "abBCab"
+
+// Output: 1
+
+// Explanation:
+
+// The only special character in word is 'b'.
+
  
 
 // Constraints:
 
-// 1 <= nums.length <= 100
-// 1 <= nums[i] <= 100
-
+// 1 <= word.length <= 50
+// word consists of only lowercase and uppercase English letters.
 
 
 // Solution:
@@ -39,17 +49,26 @@
 
 
 class Solution {
-    public boolean check(int[] nums) {
-        boolean fault = false;
-        int n = nums.length;
+    public int numberOfSpecialChars(String word) {
+        boolean[] lower = new boolean[26];
+        boolean[] upper = new boolean[26];
 
-        for (int i = 0; i < n; i++) {
-            if (nums[i] > nums[(i + 1) % n]) {
-                if (fault) return false;
-                fault = true;
+        for (char c : word.toCharArray()) {
+            if (c >= 'a' && c <= 'z') {
+                lower[c - 'a'] = true;
+            } else if (c >= 'A' && c <= 'Z') {
+                upper[c - 'A'] = true;
             }
         }
 
-        return true;
+        int count = 0;
+
+        for (int i = 0; i < 26; i++) {
+            if (lower[i] && upper[i]) {
+                count++;
+            }
+        }
+
+        return count;
     }
 }
