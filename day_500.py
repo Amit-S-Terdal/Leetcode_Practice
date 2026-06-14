@@ -47,8 +47,38 @@
 # Solution: 
 
 
+# Definition for singly-linked list.
+# class ListNode(object):
+#     def __init__(self, val=0, next=None):
+#         self.val = val
+#         self.next = next
 
+class Solution(object):
+    def pairSum(self, head):
+        """
+        :type head: Optional[ListNode]
+        :rtype: int
+        """
+        fast = head
+        slow = head
 
- ans=max(ans, rev.val+slow.val)
-            rev=rev.next
-            slow=slow.next
+        rev = None
+
+        while fast:
+            fast = fast.next.next
+
+            next_node = slow.next
+            slow.next = rev
+            rev = slow
+            slow = next_node
+
+        ans = 0
+
+        while slow:
+            x = rev.val
+            rev = rev.next
+
+            ans = max(ans, x + slow.val)
+            slow = slow.next
+
+        return ans
