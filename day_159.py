@@ -47,3 +47,4 @@ class Solution(object):
                 lucky_integer = max(lucky_integer, key)
 
         return lucky_integer
+     
