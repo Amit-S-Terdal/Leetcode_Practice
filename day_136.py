@@ -37,6 +37,7 @@
 # Solution : 
 
 
+
 class Solution(object):
     def maxAdjacentDistance(self, nums):
         diff = abs(nums[-1] - nums[0])
