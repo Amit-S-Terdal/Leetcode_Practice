@@ -59,3 +59,4 @@ class Solution:
             if nums[i] - nums[j] == 1:
                 maxLength = max(maxLength, i - j + 1)
         return maxLength
+     
